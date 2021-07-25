@@ -11,6 +11,7 @@
 #### 目的  
 - Dark Web上にPHPの動作するサイトを構築  
 - 自己署名証明書でhttpsに対応(暗号化によって出口ノードでの監視を潜り抜ける，証明書発行時のホスト名登録によるホスト名流出を防ぐ)  
+- .onionのURLからのみWebサイトにアクセス可能にする(プライベートアドレスなどからは表示できない)  
 
 #### 環境  
 Raspberry Pi3 ModelB  
@@ -36,14 +37,40 @@ nginxの設定ファイルのバックアップ&編集
 ```$ sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak```  
 ```$ sudo vi /etc/nginx/sites-available/default```  
 
+22, 23行目を編集  
+編集前  
+> listen 80 default_server;  
+> listen [::]:80 default_server;  
+
+編集後  
+> listen 80;  
+> listen [::]:80;  
+
+41行目を編集  
+ここで指定するフォルダは後ほど作成し，そのフォルダにコンテンツを配置する．  
+編集前  
+> root /var/www/html;  
+
+編集後  
+> root /var/www/hidden;  
+
 44行目を編集  
-編集前
+編集前  
 > index index.html index.htm index.nginx-debian.html;  
 
-編集後
-> index index.html index.htm index.nginx-debian.html index.php;
+編集後  
+> index index.html index.htm index.nginx-debian.html index.php;  
 
-56-61,63行目を編集  
+54行目を編集  
+ここで.onionのURLからのアクセスのみを許可している．  
+編集前  
+> server_name _;  
+
+編集後  
+> server_name *.onion;
+
+
+56-63行目を編集  
 > location ~ \.php$ {  
 >    include snippets/fastcgi-php.conf;
 >  
@@ -52,6 +79,28 @@ nginxの設定ファイルのバックアップ&編集
 >    \# With php-cgi (or other tcp sockets):  
 > \#       fastcgi_pass 127.0.0.1:9000;  
 > }  
+
+上記server{....}の下にもうひとつserver{....}を下記内容で追記  
+こっちは.onion以外からアクセスされた時の設定(デフォルトのWebページでも表示しておけば良いと思う．)  
+> server {  
+>   
+>   listen 80 default_server;  
+>   listen [::]:80 default_server;  
+>   
+>   root /var/www/html;  
+>   
+>    \# Add index.php to the list if you are using PHP  
+>    index index.html index.htm index.nginx-debian.html;  
+>   
+>   server_name _;  
+>     
+>   location / {  
+>     \# First attempt to serve request as file, then  
+>     \# as directory, then fall back to displaying a 404.  
+>     try_files $uri $uri/ =404;  
+>   }  
+> }  
+
 
 php.iniの編集  
 
@@ -66,6 +115,7 @@ php.iniの編集
 > cgi.fixpathinfo=0  
 
 php&nginxの動作確認(下記実行後，localhost/test.phpにブラウザからアクセス)  
+※.onionからアクセスして確認したい場合は，/var/www/hidden/test.phpに置き換える．  
 
 ```$ sudo /etc/init.d/php7.3-fpm restart```  
 ```$ sudo /etc/init.d/nginx restart```  
@@ -82,7 +132,7 @@ torrcファイルの71,72行目を編集("### This section is just for location-
 
 編集後
 > HiddenServiceDir /var/lib/tor/hidden_service/  
-> HiddenServiceVersion 3
+> HiddenServiceVersion 3  
 > HiddenServicePort 80 127.0.0.1:80  
 
 torを再起動  
@@ -107,6 +157,7 @@ nginxの設定ファイルをhttps用に編集する
 ```$ sudo vi /etc/nginx/sites-available/default```  
 
 22,23行目  
+※.onionのURL以外からのアクセスの設定も同様に  
 変更前  
 > listen 80 default_server;  
 > listen [::]:80 default_server;  
@@ -116,10 +167,12 @@ nginxの設定ファイルをhttps用に編集する
 > \# listen [::]:80 default_server;  
 
 25行目(# SSL configuration)の下あたりに追記  
-> listen 443 ssl default_server;  
-> listen [::]:443 ssl default_server;  
+※.onionのURL以外からのアクセスの設定にもdefault_serverを付け加えて同様に追記  
+> listen 443 ssl;  
+> listen [::]:443 ssl;  
 
 40行目らへんに追記  
+※.onionのURL以外からのアクセスの設定にも追記  
 > ssl_certificate_key /etc/nginx/ssl/server.key;  
 > ssl_certificate /etc/nginx/ssl/server.crt;  
 > ssl_protocols TLSv1.2;  
@@ -127,3 +180,4 @@ nginxの設定ファイルをhttps用に編集する
 
 ここまで完了せてhttpsで接続を試みるとhttpsで接続出来るはず....  
 ※自己署名証明書なので端末に証明書を入れてもブラウザによっては”危険を承知で続行？”みたいなのは出る  
+テストの段階はfirefoxを使った方が良いかも(Chromeだとプライベーアドレス指定でも接続できなかった．)  
