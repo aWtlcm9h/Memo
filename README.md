@@ -369,11 +369,11 @@ ESC：詳細自動ステップ実行の停止
 
 
 #### Subdmain  
-```wfuzz -c -H "Host: FUZZ.<target domain>" -w /usr/share/seclists/Discovery/DNS/bitquark-subdomains-top100000.txt -u http://<targetIP>```  
+```wfuzz -c -H "Host: FUZZ.<target domain>" -w /usr/share/SecLists/Discovery/DNS/bitquark-subdomains-top100000.txt -u http://<targetIP>```  
 > サブドメインを見つける．  
 
 
-```wfuzz -c -H "Host: FUZZ.<target domain>" -w /usr/share/seclists/Discovery/DNS/bitquark-subdomains-top100000.txt -u http://<target ip> --hh <length>```  
+```wfuzz -c -H "Host: FUZZ.<target domain>" -w /usr/share/SecLists/Discovery/DNS/bitquark-subdomains-top100000.txt -u http://<target ip> --hh <length>```  
 > 一つ上のコマンドでサブドメインが見つからなかった時のlengthを見つけた時にそのlengthを数値で指定して実行する  
 
 #### hash analyze  
